@@ -27,6 +27,11 @@ A MagicMirror² module that displays your solar energy production in a beautiful
     npm install
     ```
 
+4. Future updates:
+   ```bash
+   git pull
+   ```
+
 ## Configuration ⚙️
 
 Add the module to your `config.js` file:
@@ -80,11 +85,6 @@ You can customize the appearance by modifying these CSS properties in `MMM-evcc-
 ## Contributing 🤝
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
-
-Not yet working: 
-horizontalLines: [{ value: 5000, label: "Sunny day" }, { value: 2000, label: "Cloudy winter day" }], // e.g., [{ value: 5, label: "Sunny day" }, { value: 2, label: "Cloudy winter day" }]
-
-and vertical line to show the current time
 
 ## License 📄
 
