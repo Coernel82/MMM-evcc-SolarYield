@@ -10,65 +10,72 @@ Module.register("MMM-evcc-SolarYield", {
     chartType: "line", // Can be "line" or "bar"
     label: "Solar Yield (kWh)",
     xAxisLabel: "Time",
-    horizontalLines: [{ value: 5, label: "Sunny day" }, { value: 2, label: "Cloudy winter day" }],
+    horizontalLines: [{ value: 5, label: "Sunny day", color: "rgb(255, 238, 0)" }, { value: 2, label: "Cloudy winter day", color: "rgba(69, 145, 168, 0.33)" }],
   },
 
   getScripts: function() {
     return [
-      "https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js",
-      "https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js",
-      "https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js",
-      "https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"
+      this.file("node_modules/chart.js/dist/chart.min.js"),
+      this.file("node_modules/moment/min/moment.min.js"),
+      this.file("node_modules/chartjs-adapter-moment/dist/chartjs-adapter-moment.min.js"),
+      this.file("node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js")
     ];
   },
 
-  getStyles: function() {
+  getStyles: function () {
     return ["MMM-evcc-SolarYield.css"];
   },
 
-  start: function() {
+  start: function () {
     this.solarData = null;
     this.chart = null;
     this.loaded = false;
     this.canvasId = `solarChart-${this.identifier}`;
     Log.info(`Starting module: ${this.name}`);
-    
-    // Ensure Chart.js is using moment adapter and register annotation plugin
-    if (typeof Chart !== 'undefined' && typeof moment !== 'undefined') {
-      Log.info("Chart and moment are loaded, adapter should be ready");
+    this.getSolarData();
+  },
+
+  getSolarData: function () {
+    this.sendSocketNotification("GET_SOLAR_DATA", { api_url: this.config.api_url });
+  },
+
+  socketNotificationReceived: function (notification, payload) {
+    if (notification === "SOLAR_DATA") {
+      this.solarData = payload;
+      this.updateGraph();
     }
-    if (typeof Chart !== 'undefined' && typeof ChartAnnotation !== 'undefined') {
-      Chart.register(ChartAnnotation);
-      Log.info("Chart.js annotation plugin registered");
+    if (notification === "SOLAR_DATA_ERROR") {
+      this.updateError("Failed to load solar data: " + payload);
     }
   },
 
-  getDom: function() {
+
+  getDom: function () {
     const wrapper = document.createElement("div");
     wrapper.className = "solar-graph";
-    
+
     this.canvas = document.createElement("canvas");
     this.canvas.id = this.canvasId;
     this.canvas.width = this.config.width;
     this.canvas.height = this.config.height;
     wrapper.appendChild(this.canvas);
-    
+
     this.loadingText = document.createElement("div");
     this.loadingText.innerHTML = "Loading solar data...";
     this.loadingText.className = "loading-text";
     wrapper.appendChild(this.loadingText);
-    
+
     return wrapper;
   },
 
-  notificationReceived: function(notification) {
+  notificationReceived: function (notification) {
     if (notification === "DOM_OBJECTS_CREATED" && !this.loaded) {
       this.scheduleUpdate();
       this.loaded = true;
     }
   },
 
-  scheduleUpdate: function() {
+  scheduleUpdate: function () {
     this.fetchData();
     const self = this;
     setInterval(() => {
@@ -76,25 +83,11 @@ Module.register("MMM-evcc-SolarYield", {
     }, this.config.updateInterval);
   },
 
-  fetchData: function() {
-    const self = this;
-    if (!document.getElementById(this.canvasId)) {
-      Log.info("Canvas not available yet, skipping update");
-      return;
-    }
-    fetch(this.config.api_url)
-      .then(response => response.json())
-      .then(data => {
-        self.solarData = data;
-        self.updateGraph();
-      })
-      .catch(error => {
-        Log.error("SolarYield module fetch error:", error);
-        self.updateError("Failed to load solar data");
-      });
+  fetchData: function () {
+    this.getSolarData();
   },
 
-  updateGraph: function() {
+  updateGraph: function () {
     if (this.loadingText) {
       this.loadingText.remove();
       this.loadingText = null;
@@ -120,19 +113,19 @@ Module.register("MMM-evcc-SolarYield", {
       const rateTime = new Date(rate.start);
       // Filter data between startTime and endTime
       if (rateTime >= startTime && rateTime < endTime) {
-      const hourStart = new Date(rateTime.getFullYear(), rateTime.getMonth(), rateTime.getDate(), rateTime.getHours());
-      const key = hourStart.getTime();
-      if (!hourlyData[key]) {
-        hourlyData[key] = 0;
-      }
-      hourlyData[key] += rate.value;
+        const hourStart = new Date(rateTime.getFullYear(), rateTime.getMonth(), rateTime.getDate(), rateTime.getHours());
+        const key = hourStart.getTime();
+        if (!hourlyData[key]) {
+          hourlyData[key] = 0;
+        }
+        hourlyData[key] += rate.value;
       }
     }
 
     const dataPoints = Object.keys(hourlyData)
       .map(key => ({
-      x: new Date(parseInt(key)),
-      y: (hourlyData[key] / 1000).toFixed(2)
+        x: new Date(parseInt(key)),
+        y: (hourlyData[key] / 1000).toFixed(2)
       }))
       .sort((a, b) => a.x - b.x);
     const annotations = [
@@ -152,7 +145,7 @@ Module.register("MMM-evcc-SolarYield", {
     ];
 
 
-    
+
     if (this.config.horizontalLines) {
       this.config.horizontalLines.forEach(line => {
         annotations.push({
@@ -160,7 +153,7 @@ Module.register("MMM-evcc-SolarYield", {
           mode: 'horizontal',
           scaleID: 'y',
           value: line.value,
-          borderColor: 'rgb(255, 238, 0)',
+          borderColor: line.color, // 'rgb(255, 238, 0)',
           borderWidth: 1,
           label: {
             enabled: true,
@@ -174,7 +167,7 @@ Module.register("MMM-evcc-SolarYield", {
     if (this.chart) {
       this.chart.data.datasets[0].data = dataPoints;
       this.chart.options.scales.x.min = startTime;
-      this.chart.options.scales.x.max = now;
+      this.chart.options.scales.x.max = endTime;
       this.chart.options.plugins.annotation.annotations = annotations;
       this.chart.update();
     } else {
@@ -201,52 +194,52 @@ Module.register("MMM-evcc-SolarYield", {
         responsive: false,
         scales: {
           x: {
-            type: 'time',
-            time: {
-              unit: 'hour',
-              displayFormats: {
-                hour: 'MMM D HH:mm'
-              }
-            },
-            min: startTime,
-            max: endTime,
-            title: {
-              display: true,
-              text: this.config.xAxisLabel,
-              color: "#fff"
-            },
-            ticks: {
-              color: "#fff"
-            }
+        type: 'time',
+        time: {
+          unit: 'hour',
+          displayFormats: {
+            hour: 'ddd HH:mm' // Display day of the week and time
+          }
+        },
+        min: startTime,
+        max: endTime,
+        title: {
+          display: true,
+          text: this.config.xAxisLabel,
+          color: "#fff"
+        },
+        ticks: {
+          color: "#fff"
+        }
           },
           y: {
-            title: {
-              display: true,
-              text: "kWh",
-              color: "#fff"
-            },
-            beginAtZero: true,
-            ticks: {
-              color: "#fff"
-            }
+        title: {
+          display: true,
+          text: "kWh",
+          color: "#fff"
+        },
+        beginAtZero: true,
+        ticks: {
+          color: "#fff"
+        }
           }
         },
         plugins: {
           legend: {
-            labels: {
-              color: "#fff",
-              font: {
-                size: 12
-              }
-            }
+        labels: {
+          color: "#fff",
+          font: {
+            size: 12
+          }
+        }
           },
           tooltip: {
-            callbacks: {
-              label: (context) => `${context.parsed.y} kWh`
-            }
+        callbacks: {
+          label: (context) => `${context.parsed.y} kWh`
+        }
           },
           annotation: {
-            annotations: annotations 
+        annotations: annotations
           }
         }
       };
@@ -261,7 +254,7 @@ Module.register("MMM-evcc-SolarYield", {
     }
   },
 
-  updateError: function(message) {
+  updateError: function (message) {
     if (this.loadingText) {
       this.loadingText.innerHTML = message;
       this.loadingText.style.color = "#ff5555";

@@ -1,0 +1,14 @@
+{
+  "name": "mmm-evcc-solaryield",
+  "version": "1.0.0",
+  "description": "MagicMirror² module to display solar energy production using Chart.js",
+  "main": "MMM-evcc-SolarYield.js",
+  "author": "Coernel82",
+  "license": "MIT",
+  "dependencies": {
+    "chart.js": "^3.9.1",
+    "moment": "^2.29.4",
+    "chartjs-adapter-moment": "^1.0.1",
+    "chartjs-plugin-annotation": "^1.4.0"
+  }
+}

@@ -24,6 +24,7 @@ A MagicMirror² module that displays your solar energy production in a beautiful
 3. Install the module:
     ```bash
     cd MMM-evcc-SolarYield
+    npm install
     ```
 
 ## Configuration ⚙️
@@ -43,6 +44,7 @@ Add the module to your `config.js` file:
      tension: 0.4,  // Line smoothness (0-1)
      chartType: "line",  // "line" or "bar"
      xAxisLabel: 'Zeit',
+     horizontalLines: [{ value: 12, label: "Krasse Sonne", color: "rgb(255, 248, 146)" }, { value: 4, label: "Wolkiger Wintertag", color: "rgba(20, 119, 150, 0.69)" }],
   }
 }
 ```
