@@ -2,9 +2,6 @@
 
 A MagicMirror² module that displays your solar energy production in a beautiful hourly graph, powered by your EVCC API data!
 
-![Solar Yield Graph Example](https://i.ibb.co/5sx4bBp/solar-yield-graph.png)  
-*Example of the solar yield visualization*
-
 ## Features ✨
 
 - 📈 **Hourly solar production** – Shows kWh produced each hour (not cumulative)
@@ -22,7 +19,7 @@ A MagicMirror² module that displays your solar energy production in a beautiful
     ```
 2. Clone this repository:
     ```bash
-    git clone https://github.com/yourusername/MMM-evcc-SolarYield.git
+    git clone https://github.com/Coernel82/MMM-evcc-SolarYield.git
     ```
 3. Install the module:
     ```bash
