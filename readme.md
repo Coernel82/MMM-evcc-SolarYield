@@ -1,6 +1,8 @@
 # MMM-evcc-SolarYield 🌞📊
 
 A MagicMirror² module that displays your solar energy production in a beautiful hourly graph, powered by your EVCC API data!
+![Screenshot](docs/screenshot-01.png)
+
 
 ## Features ✨
 
@@ -8,7 +10,7 @@ A MagicMirror² module that displays your solar energy production in a beautiful
 - 🔄 **Auto-updating** – Regularly fetches fresh data from your EVCC system
 - 🎨 **Customizable** – Choose between line or bar chart styles
 - 🌙 **Dark mode friendly** – Designed to match MagicMirror's aesthetic
-- ⏱️ **24-hour view** – Shows all hours even with no production
+- ⏱️ **48-hour view** – Shows all hours even with no production
 - 🔧 **Easy configuration** – Just point it to your EVCC API endpoint
 
 ## Installation 📥
@@ -80,7 +82,8 @@ You can customize the appearance by modifying these CSS properties in `MMM-evcc-
 ## Dependencies 📦
 
 - [Chart.js](https://www.chartjs.org/) (auto-installed)
-- [MagicMirror²](https://magicmirror.builders/) (v2.15.0 or newer recommended)
+- [MagicMirror²](https://magicmirror.builders/)
+- [evcc](https://evcc.io) (something around version 0.204.3 and upwards as we need the API with solar data)
 
 ## Contributing 🤝
 
